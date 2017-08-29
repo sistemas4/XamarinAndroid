@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.frater.radio" android:versionName="1.6" android:installLocation="internalOnly" android:versionCode="7">
+	<uses-sdk android:minSdkVersion="19" />
+	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.WAKE_LOCK" />
+	<permission android:name="com.frater.radio.permission.C2D_MESSAGE" android:protectionLevel="signature" />
+	<uses-permission android:name="com.frater.radio.permission.C2D_MESSAGE" />
+	<application android:allowBackup="true" android:label="Radios Fráter" android:theme="@android:style/Theme.Material" android:icon="@drawable/iconomicrofono">
+		<meta-data android:name="io.fabric.ApiKey" android:value="17231ce27ce051fd2d9f9986cf8960b32d7b0e9d" />
+		<receiver android:name="com.onesignal.GcmBroadcastReceiver" android:permission="com.google.android.c2dm.permission.SEND">
+			<intent-filter>
+				<action android:name="com.google.android.c2dm.intent.RECEIVE" />
+				<category android:name="com.frater.radio" />
+			</intent-filter>
+		</receiver>
+	</application>
+</manifest>
