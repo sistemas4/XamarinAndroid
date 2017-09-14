@@ -32,7 +32,7 @@ namespace RadiosFrater
 			"Kids", "Adoración",
 			"Español", "Inglés",
 			"Clásica", "Instrumental",
-			"Prédicas", "FráterTV" };
+			"Prédicas" };
 		int[] radioImage = {
 			Resource.Drawable.KIds_2, Resource.Drawable.Adoracion_2,
 			Resource.Drawable.Espanol_2, Resource.Drawable.Ingles_2,
@@ -45,8 +45,8 @@ namespace RadiosFrater
 			@"http://174.142.111.104:9998/stats?sid=1&json=1", @"http://174.142.111.104:9992/stats?sid=1&json=1", 
 			//Clasica											//Instrumental
 			@"http://174.142.111.104:9982/stats?sid=1&json=1", @"http://174.142.111.104:9980/stats?sid=1&json=1", 
-			//Clasica											
-			"@http://174.142.111.104:9986/stats?sid=1&json=1" };
+			//Prédicas										
+			@"http://174.142.111.104:9986/stats?sid=1&json=1" };
 
 		bool isBound = false;
 		private MediaPlayerServiceBinder binder;
