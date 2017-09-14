@@ -18,7 +18,7 @@ namespace RadiosFrater.Services
 	[IntentFilter(new[] { ActionPlay, ActionPause, ActionStop, ActionTogglePlayback, ActionNext, ActionPrevious })]
 	public class MediaPlayerService : Service, AudioManager.IOnAudioFocusChangeListener,
 	MediaPlayer.IOnBufferingUpdateListener,
-	MediaPlayer.IOnCompletionListener,
+	MediaPlayer.IOnCompletionListener, 
 	MediaPlayer.IOnErrorListener,
 	MediaPlayer.IOnPreparedListener,
 	MediaPlayer.IOnSeekCompleteListener
@@ -37,7 +37,11 @@ namespace RadiosFrater.Services
 			//Español						//Ingles
 			@"http://174.142.111.104:9998", @"http://174.142.111.104:9992", 
 			//Clasica						//Instrumental
-			@"http://174.142.111.104:9982", @"http://174.142.111.104:9980" };
+			@"http://174.142.111.104:9982", @"http://174.142.111.104:9980",
+		    //Predicas						
+			@"http://174.142.111.104:9986"};
+
+		public int idM;
 
 		public MediaPlayer mediaPlayer;
 		private AudioManager audioManager;
@@ -58,6 +62,7 @@ namespace RadiosFrater.Services
 
 		private WifiManager wifiManager;
 		private WifiManager.WifiLock wifiLock;
+		private ConnectivityManager conManager;
 		private ComponentName remoteComponentName;
 
 		private const int NotificationId = 1;
@@ -136,7 +141,7 @@ namespace RadiosFrater.Services
 			//Find our audio and notificaton managers
 			audioManager = (AudioManager)GetSystemService(AudioService);
 			wifiManager = (WifiManager)GetSystemService(WifiService);
-
+			conManager = (ConnectivityManager)GetSystemService(ConnectivityService);
 			remoteComponentName = new ComponentName(PackageName, new RemoteControlBroadcastReceiver().ComponentName);
 		}
 
@@ -159,7 +164,7 @@ namespace RadiosFrater.Services
 				}
 
 				mediaSessionCompat.Active = true;
-				mediaSessionCompat.SetCallback(new MediaSessionCallback((MediaPlayerServiceBinder)binder));
+				mediaSessionCompat.SetCallback(new MediaSessionCallback((MediaPlayerServiceBinder)binder, idM));
 
 				mediaSessionCompat.SetFlags(MediaSessionCompat.FlagHandlesMediaButtons | MediaSessionCompat.FlagHandlesTransportControls);
 			}
@@ -204,7 +209,7 @@ namespace RadiosFrater.Services
 
 		public async void OnCompletion(MediaPlayer mp)
 		{
-			await PlayNext();
+			await Play(idM);
 		}
 
 		public bool OnError(MediaPlayer mp, MediaError what, int extra)
@@ -271,28 +276,29 @@ namespace RadiosFrater.Services
 			}
 		}
 
-		private Bitmap cover;
+		//private Bitmap cover;
 
-		public object Cover
-		{
-			get
-			{
-				if (cover == null)
-					cover = BitmapFactory.DecodeResource(Resources, Resource.Drawable.album_art);
-				return cover;
-			}
-			private set
-			{
-				cover = value as Bitmap;
-				OnCoverReloaded(EventArgs.Empty);
-			}
-		}
+		//public object Cover
+		//{
+		//	get
+		//	{
+		//		if (cover == null)
+		//			//cover = BitmapFactory.DecodeResource(Resources, Resource.Drawable.album_art);
+		//		return cover;
+		//	}
+		//	private set
+		//	{
+		//		cover = value as Bitmap;
+		//		OnCoverReloaded(EventArgs.Empty);
+		//	}
+		//}
 
 		/// <summary>
 		/// Intializes the player.
 		/// </summary>
-		public async Task Play()
+		public async Task Play(int i)
 		{
+			idM = i;
 			if (mediaPlayer != null && MediaPlayerState == PlaybackStateCompat.StatePaused)
 			{
 				//We are simply paused so just start again
@@ -321,9 +327,9 @@ namespace RadiosFrater.Services
 			{
 				MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
 
-				await mediaPlayer.SetDataSourceAsync(ApplicationContext, Android.Net.Uri.Parse(audioUrl));
+				await mediaPlayer.SetDataSourceAsync(ApplicationContext, Android.Net.Uri.Parse(audioUrl[i]));
 
-				await metaRetriever.SetDataSourceAsync(audioUrl, new Dictionary<string, string>());
+				await metaRetriever.SetDataSourceAsync(audioUrl[i], new Dictionary<string, string>());
 
 				var focusResult = audioManager.RequestAudioFocus(this, Stream.Music, AudioFocus.Gain);
 				if (focusResult != AudioFocusRequest.Granted)
@@ -339,11 +345,11 @@ namespace RadiosFrater.Services
 				UpdateMediaMetadataCompat(metaRetriever);
 				StartNotification();
 
-				byte[] imageByteArray = metaRetriever.GetEmbeddedPicture();
-				if (imageByteArray == null)
-					Cover = await BitmapFactory.DecodeResourceAsync(Resources, Resource.Drawable.album_art);
-				else
-					Cover = await BitmapFactory.DecodeByteArrayAsync(imageByteArray, 0, imageByteArray.Length);
+				//byte[] imageByteArray = metaRetriever.GetEmbeddedPicture();
+				//if (imageByteArray == null)
+				//	Cover = await BitmapFactory.DecodeResourceAsync(Resources, Resource.Drawable.album_art);
+				//else
+				//	Cover = await BitmapFactory.DecodeByteArrayAsync(imageByteArray, 0, imageByteArray.Length);
 			}
 			catch (Exception ex)
 			{
@@ -380,36 +386,36 @@ namespace RadiosFrater.Services
 
 			UpdatePlaybackState(PlaybackStateCompat.StateSkippingToNext);
 
-			await Play();
+			await Play(idM);
 		}
 
-		public async Task PlayPrevious()
-		{
-			// Start current track from beginning if it's the first track or the track has played more than 3sec and you hit "playPrevious".
-			if (Position > 3000)
-			{
-				await Seek(0);
-			}
-			else
-			{
-				if (mediaPlayer != null)
-				{
-					mediaPlayer.Reset();
-					mediaPlayer.Release();
-					mediaPlayer = null;
-				}
+		//public async Task PlayPrevious()
+		//{
+		//	// Start current track from beginning if it's the first track or the track has played more than 3sec and you hit "playPrevious".
+		//	if (Position > 3000)
+		//	{
+		//		await Seek(0);
+		//	}
+		//	else
+		//	{
+		//		if (mediaPlayer != null)
+		//		{
+		//			mediaPlayer.Reset();
+		//			mediaPlayer.Release();
+		//			mediaPlayer = null;
+		//		}
 
-				UpdatePlaybackState(PlaybackStateCompat.StateSkippingToPrevious);
+		//		UpdatePlaybackState(PlaybackStateCompat.StateSkippingToPrevious);
 
-				await Play();
-			}
-		}
+		//		await Play();
+		//	}
+		//}
 
 		public async Task PlayPause()
 		{
 			if (mediaPlayer == null || (mediaPlayer != null && MediaPlayerState == PlaybackStateCompat.StatePaused))
 			{
-				await Play();
+				await Play(idM);
 			}
 			else
 			{
@@ -512,7 +518,7 @@ namespace RadiosFrater.Services
 			if (mediaSessionCompat == null)
 				return;
 
-			var pendingIntent = PendingIntent.GetActivity(ApplicationContext, 0, new Intent(ApplicationContext, typeof(MainActivity)), PendingIntentFlags.UpdateCurrent);
+			var pendingIntent = PendingIntent.GetActivity(ApplicationContext, 0, new Intent(ApplicationContext, typeof(PlayerActivity)), PendingIntentFlags.UpdateCurrent);
 			MediaMetadataCompat currentTrack = mediaControllerCompat.Metadata;
 
 			Android.Support.V7.App.NotificationCompat.MediaStyle style = new Android.Support.V7.App.NotificationCompat.MediaStyle();
@@ -527,11 +533,13 @@ namespace RadiosFrater.Services
 
 			NotificationCompat.Builder builder = new NotificationCompat.Builder(ApplicationContext)
 				.SetStyle(style)
-				.SetContentTitle(currentTrack.GetString(MediaMetadata.MetadataKeyTitle))
-				.SetContentText(currentTrack.GetString(MediaMetadata.MetadataKeyArtist))
-				.SetContentInfo(currentTrack.GetString(MediaMetadata.MetadataKeyAlbum))
-				.SetSmallIcon(Resource.Drawable.album_art)
-				.SetLargeIcon(Cover as Bitmap)
+				.SetTicker("Radios Fráter")
+				.SetTicker("Reproduciendo")
+				.SetContentTitle("Radios Fráter")
+				//.SetContentText("Inglés")
+				//.SetContentInfo("Holis")
+				//.SetSmallIcon(Resource.Drawable.album_art)
+				//.SetLargeIcon(Cover as Bitmap)
 				.SetContentIntent(pendingIntent)
 				.SetShowWhen(false)
 				.SetOngoing(MediaPlayerState == PlaybackStateCompat.StatePlaying)
@@ -543,6 +551,7 @@ namespace RadiosFrater.Services
 			style.SetShowActionsInCompactView(0, 1, 2);
 
 			NotificationManagerCompat.From(ApplicationContext).Notify(NotificationId, builder.Build());
+			StartForeground(NotificationId, builder.Build());
 		}
 
 		private NotificationCompat.Action GenerateActionCompat(int icon, String title, String intentAction)
@@ -597,7 +606,7 @@ namespace RadiosFrater.Services
 					.PutString(MediaMetadata.MetadataKeyArtist, mediaSessionCompat.Controller.Metadata.GetString(MediaMetadata.MetadataKeyArtist))
 					.PutString(MediaMetadata.MetadataKeyTitle, mediaSessionCompat.Controller.Metadata.GetString(MediaMetadata.MetadataKeyTitle));
 			}
-			builder.PutBitmap(MediaMetadata.MetadataKeyAlbumArt, Cover as Bitmap);
+			//builder.PutBitmap(MediaMetadata.MetadataKeyAlbumArt, Cover as Bitmap);
 
 			mediaSessionCompat.SetMetadata(builder.Build());
 		}
@@ -698,6 +707,21 @@ namespace RadiosFrater.Services
 		public override void OnDestroy()
 		{
 			base.OnDestroy();
+			//if (mediaPlayer != null)
+			//{
+			//	mediaPlayer.Release();
+			//	mediaPlayer = null;
+
+			//	StopNotification();
+			//	StopForeground(true);
+			//	ReleaseWifiLock();
+			//	UnregisterMediaSessionCompat();
+			//}
+		}
+
+		public override void OnTaskRemoved(Intent rootIntent)
+		{
+			base.OnTaskRemoved(rootIntent);
 			if (mediaPlayer != null)
 			{
 				mediaPlayer.Release();
@@ -753,9 +777,11 @@ namespace RadiosFrater.Services
 		{
 
 			private MediaPlayerServiceBinder mediaPlayerService;
-			public MediaSessionCallback(MediaPlayerServiceBinder service)
+			private int id;
+			public MediaSessionCallback(MediaPlayerServiceBinder service, int i)
 			{
 				mediaPlayerService = service;
+				id = i;
 			}
 
 			public override void OnPause()
@@ -766,21 +792,21 @@ namespace RadiosFrater.Services
 
 			public override void OnPlay()
 			{
-				mediaPlayerService.GetMediaPlayerService().Play();
+				mediaPlayerService.GetMediaPlayerService().Play(id);
 				base.OnPlay();
 			}
 
-			public override void OnSkipToNext()
-			{
-				mediaPlayerService.GetMediaPlayerService().PlayNext();
-				base.OnSkipToNext();
-			}
+			//public override void OnSkipToNext()
+			//{
+			//	mediaPlayerService.GetMediaPlayerService().PlayNext();
+			//	base.OnSkipToNext();
+			//}
 
-			public override void OnSkipToPrevious()
-			{
-				mediaPlayerService.GetMediaPlayerService().PlayPrevious();
-				base.OnSkipToPrevious();
-			}
+			//public override void OnSkipToPrevious()
+			//{
+			//	mediaPlayerService.GetMediaPlayerService().PlayPrevious();
+			//	base.OnSkipToPrevious();
+			//}
 
 			public override void OnStop()
 			{

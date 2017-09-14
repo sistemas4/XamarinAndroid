@@ -8,219 +8,110 @@ using Android.OS;
 using Android.Webkit;
 using RadiosFrater.Services;
 using Com.OneSignal;
+using Android.Support.V7.App;
+using Android.Support.V4.View;
+using Android.Support.V7.Widget;
+using Android.Support.Design.Widget;
+using Android.Support.Design;
+using Android.Support.V4.App;
 
 namespace RadiosFrater
 {
 	[Activity(Label = "Radios Fráter", MainLauncher = true, ConfigurationChanges = Android.Content.PM.ConfigChanges.Orientation | Android.Content.PM.ConfigChanges.ScreenSize)]
 
-	public class MainActivity : Activity
+	public class MainActivity : AppCompatActivity
 	{
-		GridView rdiogrid;
-		WebView aboutView2, contactView;
-		public int nRadio;
-		bool isPlay;
+		TabLayout tabLayout;
 
 		protected override void OnCreate(Bundle savedInstanceState)
 		{
 			IO.Fabric.Sdk.Android.Fabric.With(this, new Com.Crashlytics.Android.Crashlytics());
 			base.OnCreate(savedInstanceState);
 
-			this.ActionBar.NavigationMode = ActionBarNavigationMode.Tabs;
-
 			// Set our view from the "main" layout resource
 			SetContentView(Resource.Layout.Main);
 
 			OneSignal.Current.StartInit("da713fcc-93ea-471b-932a-02d63c02bbfb").EndInit();
+			var toolbar = FindViewById<Android.Support.V7.Widget.Toolbar>(Resource.Id.app_bar);
+			SetSupportActionBar(toolbar);
 
-			ISharedPreferences sharedpref = GetSharedPreferences("PS", 0);
-			isPlay = sharedpref.GetBoolean("isPlay", false);
-
-			AddTab("Radios", 0, new SampleTabFragment());
-			AddTab("Acerca de", 0, new SampleTabFragment());
-			AddTab("Contáctenos", 0, new SampleTabFragment());
+			tabLayout = FindViewById<TabLayout>(Resource.Id.sliding_tabsIcon);
 
 
+			FnInitTabLayout();
+		}
 
-			rdiogrid = FindViewById<GridView>(Resource.Id.gridrdios);
-			rdiogrid.Adapter = new ImageAdapter(this);
-
-			aboutView2 = FindViewById<WebView>(Resource.Id.aboutView2);
-			aboutView2.LoadUrl("http://radiosfrater.com/acerca-de-app/");
-			contactView = FindViewById<WebView>(Resource.Id.contactView);
-			contactView.LoadUrl("http://radiosfrater.com/contacto-app/");
-
-			rdiogrid.ItemClick += delegate (object sender, AdapterView.ItemClickEventArgs args)
+		void FnInitTabLayout()
+		{
+			tabLayout.SetTabTextColors(Android.Graphics.Color.Aqua, Android.Graphics.Color.AntiqueWhite);
+			//Fragment array
+			var fragments = new Android.Support.V4.App.Fragment[]
 			{
-				nRadio = args.Position;
-				Intent player = new Intent(this, typeof(PlayerActivity));
-				//player.PutExtra("id", nRadio);
-				ISharedPreferencesEditor editor = sharedpref.Edit();
-				editor.PutInt("idNot", nRadio);
-				editor.Commit();
-				player.PutExtra("isP", isPlay);
-				if (nRadio == 6)
-					StartActivityForResult(player, 7);
-				else
-					StartActivity(player);
-			};
-			//toolbar = FindViewById<Toolbar>(Resource.Id.toolbar);
-			//         SetActionBar(toolbar);
-			//ActionBar.NavigationMode = ActionBarNavigationMode.Tabs;
-			//ActionBar.Title = "My Toolbar";
+				new RadiosFragment(),
+				new AboutWebVFragment(),
+				new ContactWbFragment(),
 
+
+			};
+			//Tab title array
+			var titles = CharSequence.ArrayFromStringArray(new[] {
+				"Radios",
+				"Acerca de",
+				"Contáctenos"
+			});
+			var viewPager = FindViewById<ViewPager>(Resource.Id.viewpagerIcon);
+			//viewpager holding fragment array and tab title text
+			viewPager.Adapter = new TabsFragmentPagerAdapter(SupportFragmentManager, fragments, titles);
+
+			// Give the TabLayout the ViewPager 
+			tabLayout.SetupWithViewPager(viewPager);
+			//tabLayout.SetTabTextColors(
+			//FnSetIcons();
+			FnSetupTabIconsWithText();
+		}
+
+		private void FnSetupTabIconsWithText()
+		{
+			View view = LayoutInflater.Inflate(Resource.Layout.custom_text, null);
+			var custTabOne = view.FindViewById<TextView>(Resource.Id.txtTabText);
+			custTabOne.Text = "Radios";
+			//custTabOne.SetCompoundDrawablesWithIntrinsicBounds(Resource.Drawable.ic_call, 0, 0, 0);
+			tabLayout.GetTabAt(0).SetCustomView(custTabOne);
+
+			View view1 = LayoutInflater.Inflate(Resource.Layout.custom_text, null);
+			TextView custTabTwo = view1.FindViewById<TextView>(Resource.Id.txtTabText);//(TextView)LayoutInflater.Inflate (Resource.Layout.custom_text, null); ;
+			custTabTwo.Text = "Acerca de";
+			//custTabTwo.SetCompoundDrawablesWithIntrinsicBounds(Resource.Drawable.ic_msg, 0, 0, 0);
+			tabLayout.GetTabAt(1).SetCustomView(custTabTwo);
+
+			View view2 = LayoutInflater.Inflate(Resource.Layout.custom_text, null);
+			TextView custTabThree = view2.FindViewById<TextView>(Resource.Id.txtTabText);//(TextView)LayoutInflater.Inflate (Resource.Layout.custom_text, null); ;
+			custTabThree.Text = "Contáctenos";
+			//custTabThree.SetCompoundDrawablesWithIntrinsicBounds(Resource.Drawable.ic_wifi, 0, 0, 0);
+			tabLayout.GetTabAt(2).SetCustomView(custTabThree);
 		}
 
 		protected override void OnDestroy()
 		{
 			base.OnDestroy();
-			Finish();
 		}
 
 		protected override void OnStop()
 		{
 			base.OnStop();
-			Finish();
 		}
 
+		//protected override void OnSaveInstanceState(Bundle outState)
+		//{
+		//	outState.PutInt("tab", ActionBar.SelectedNavigationIndex);
 
-		internal class ImageAdapter : BaseAdapter
-		{
-			Context context;
-
-			public ImageAdapter(Context c)
-			{
-				context = c;
-			}
-
-			public override int Count
-			{
-				get { return thumbIds.Length; }
-			}
-
-			public override Java.Lang.Object GetItem(int position)
-			{
-				return null;
-			}
-
-			public override long GetItemId(int position)
-			{
-				return 0;
-			}
-
-			// create a new ImageView for each item referenced by the Adapter
-			public override View GetView(int position, View convertView, ViewGroup parent)
-			{
-				ImageView imageView;
-
-				if (convertView == null)
-				{  // if it's not recycled, initialize some attributes
-					imageView = new ImageView(context);
-					imageView.LayoutParameters = new GridView.LayoutParams(200, 200);
-					imageView.SetScaleType(ImageView.ScaleType.CenterCrop);
-					imageView.SetPadding(8, 16, 8, 8);
-				}
-				else
-				{
-					imageView = (ImageView)convertView;
-				}
-
-				imageView.SetImageResource(thumbIds[position]);
-				return imageView;
-			}
-
-			// references to our images
-			int[] thumbIds = {
-		Resource.Drawable.KIds_2, Resource.Drawable.Adoracion_2,
-			Resource.Drawable.Espanol_2, Resource.Drawable.Ingles_2,
-			Resource.Drawable.Clasica_2, Resource.Drawable.Instrumental_2,
-		Resource.Drawable.FraterTV_2
-			};
-		}
-
-		protected override void OnSaveInstanceState(Bundle outState)
-		{
-			outState.PutInt("tab", this.ActionBar.SelectedNavigationIndex);
-
-			base.OnSaveInstanceState(outState);
-		}
-
-		void AddTab(string tabText, int iconResourceId, Fragment view)
-		{
-			//this-----------------
-			var tab = this.ActionBar.NewTab();
-			tab.SetText(tabText);
-			//tab.SetIcon(iconResourceId);
-
-			// must set event handler before adding tab
-			tab.TabSelected += delegate (object sender, ActionBar.TabEventArgs e)
-			{
-				var fragment = this.FragmentManager.FindFragmentById(Resource.Id.fragmentContainer);
-				if (fragment != null)
-					e.FragmentTransaction.Remove(fragment);
-				e.FragmentTransaction.Add(Resource.Id.fragmentContainer, view);
-				if (fragment != null && rdiogrid != null)
-				{
-					switch (tab.Position)
-					{
-						case 0:
-							rdiogrid.Visibility = ViewStates.Visible;
-							aboutView2.Visibility = ViewStates.Invisible;
-							contactView.Visibility = ViewStates.Invisible;
-							break;
-						case 1:
-							rdiogrid.Visibility = ViewStates.Invisible;
-							aboutView2.Visibility = ViewStates.Visible;
-							contactView.Visibility = ViewStates.Invisible;
-							break;
-						case 2:
-							rdiogrid.Visibility = ViewStates.Invisible;
-							aboutView2.Visibility = ViewStates.Invisible;
-							contactView.Visibility = ViewStates.Visible;
-							break;
-						default:
-							break;
-					}
-				}
-			};
-			tab.TabUnselected += delegate (object sender, ActionBar.TabEventArgs e)
-			{
-				e.FragmentTransaction.Remove(view);
-			};
-
-			//this.ActionBar.AddTab(tab);
-			ActionBar.AddTab(tab);
-		}
-
-		class SampleTabFragment : Fragment
-		{
-			public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-			{
-				base.OnCreateView(inflater, container, savedInstanceState);
-
-				var view = inflater.Inflate(Resource.Layout.Tab, container, false);
-				var sampleTextView = view.FindViewById<TextView>(Resource.Id.sampleTextView);
-				sampleTextView.Text = "sample fragment text";
-
-				return view;
-			}
-		}
-
-		class SampleTabFragment2 : Fragment
-		{
-			public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-			{
-				base.OnCreateView(inflater, container, savedInstanceState);
-
-				var view = inflater.Inflate(Resource.Layout.Tab, container, false);
-				var sampleTextView = view.FindViewById<TextView>(Resource.Id.sampleTextView);
-				sampleTextView.Text = "sample fragment text 2";
-
-				return view;
-			}
-		}
+		//	base.OnSaveInstanceState(outState);
+		//}
 
 
 	}
+
+
 
 
 }

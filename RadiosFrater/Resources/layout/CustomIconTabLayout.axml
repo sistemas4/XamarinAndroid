@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <LinearLayout
@@ -14,7 +15,7 @@
             android:id="@+id/sliding_tabsIcon"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#212121"
+            android:background="#ff1976d2"
             app:tabMode="fixed"
             app:tabGravity="fill" />
         <android.support.v4.view.ViewPager
@@ -24,15 +25,4 @@
             android:layout_weight="1"
             android:background="#ffffff" />
     </LinearLayout>
-<!--<GridView
-        android:id="@+id/gridrdios"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:columnWidth="120dp"
-        android:numColumns="2"
-        android:layout_marginTop="30dp"
-        android:verticalSpacing="30dp"
-        android:horizontalSpacing="10dp"
-        android:stretchMode="columnWidth"
-        android:gravity="center" />-->
 </LinearLayout>

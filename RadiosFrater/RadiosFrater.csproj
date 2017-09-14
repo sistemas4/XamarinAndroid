@@ -58,9 +58,6 @@
       <HintPath>..\packages\Crashlytics.Droid.Binding.1.2.1\lib\MonoAndroid\Crashlytics.Droid.dll</HintPath>
     </Reference>
     <Reference Include="System.Json" />
-    <Reference Include="Xamarin.Android.Support.v4">
-      <HintPath>..\packages\Xamarin.Android.Support.v4.23.0.1.3\lib\MonoAndroid403\Xamarin.Android.Support.v4.dll</HintPath>
-    </Reference>
     <Reference Include="Xamarin.GooglePlayServices.Basement">
       <HintPath>..\packages\Xamarin.GooglePlayServices.Basement.27.0.0.0\lib\MonoAndroid41\Xamarin.GooglePlayServices.Basement.dll</HintPath>
     </Reference>
@@ -80,16 +77,41 @@
       <HintPath>..\packages\Com.OneSignal.3.0.1\lib\MonoAndroid\OneSignal.Android.Binding.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Android.Export" />
+    <Reference Include="Xamarin.Android.Support.v4">
+      <HintPath>..\packages\Xamarin.Android.Support.v4.23.3.0\lib\MonoAndroid403\Xamarin.Android.Support.v4.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Android.Support.v7.RecyclerView">
+      <HintPath>..\packages\Xamarin.Android.Support.v7.RecyclerView.23.3.0\lib\MonoAndroid403\Xamarin.Android.Support.v7.RecyclerView.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Android.Support.Vector.Drawable">
+      <HintPath>..\packages\Xamarin.Android.Support.Vector.Drawable.23.3.0\lib\MonoAndroid403\Xamarin.Android.Support.Vector.Drawable.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Android.Support.Animated.Vector.Drawable">
+      <HintPath>..\packages\Xamarin.Android.Support.Animated.Vector.Drawable.23.3.0\lib\MonoAndroid403\Xamarin.Android.Support.Animated.Vector.Drawable.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Android.Support.v7.AppCompat">
+      <HintPath>..\packages\Xamarin.Android.Support.v7.AppCompat.23.3.0\lib\MonoAndroid403\Xamarin.Android.Support.v7.AppCompat.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Android.Support.Design">
+      <HintPath>..\packages\Xamarin.Android.Support.Design.23.3.0\lib\MonoAndroid43\Xamarin.Android.Support.Design.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MainActivity.cs" />
     <Compile Include="PlayerActivity.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\StreamingBackgroundService.cs" />
     <Compile Include="VideoActivity.cs" />
     <Compile Include="Services\MediaPlayerService.cs" />
     <Compile Include="Services\EventHandlers.cs" />
+    <Compile Include="OldPlayerActivity.cs" />
+    <Compile Include="Receivers\RemoteControlBroadcastReceiver.cs" />
+    <Compile Include="OldMainActivity.cs" />
+    <Compile Include="TabsFragmentPagerAdapter.cs" />
+    <Compile Include="MainActivity.cs" />
+    <Compile Include="BlueFragment.cs" />
+    <Compile Include="ContactWbFragment.cs" />
+    <Compile Include="RadiosFragment.cs" />
+    <Compile Include="AboutWebVFragment.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="GettingStarted.Xamarin" />
@@ -115,6 +137,15 @@
     <AndroidResource Include="Resources\values\Styles.xml" />
     <AndroidResource Include="Resources\drawable\IconoMicrofono.png" />
     <AndroidResource Include="Resources\drawable\FraterTV_2.png" />
+    <AndroidResource Include="Resources\values-v21\Styles.xml" />
+    <AndroidResource Include="Resources\layout\BlueFragmentLayout.axml" />
+    <AndroidResource Include="Resources\layout\AppBar.axml" />
+    <AndroidResource Include="Resources\layout\ContactWbLayout.axml" />
+    <AndroidResource Include="Resources\layout\aboutWbLayout.axml" />
+    <AndroidResource Include="Resources\layout\CustomIconTabLayout.axml" />
+    <AndroidResource Include="Resources\layout\custom_text.axml" />
+    <AndroidResource Include="Resources\layout\RadiosLayout.axml" />
+    <AndroidResource Include="Resources\drawable\Predicas.png" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\Main.axml">
@@ -128,6 +159,9 @@
     <Folder Include="Resources\mipmap-xhdpi\" />
     <Folder Include="Resources\mipmap-xxhdpi\" />
     <Folder Include="Resources\mipmap-xxxhdpi\" />
+    <Folder Include="Receivers\" />
+    <Folder Include="Resources\values-v21\" />
+    <Folder Include="Controladores\" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\rdios.png" />
@@ -152,4 +186,5 @@
 		<Target Name="AfterBuild">
 		</Target>
 	-->
+  <Import Project="..\packages\Xamarin.Android.Support.Vector.Drawable.23.3.0\build\Xamarin.Android.Support.Vector.Drawable.targets" Condition="Exists('..\packages\Xamarin.Android.Support.Vector.Drawable.23.3.0\build\Xamarin.Android.Support.Vector.Drawable.targets')" />
 </Project>
