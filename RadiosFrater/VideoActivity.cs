@@ -22,7 +22,7 @@ namespace RadiosFrater
 		WebView count;
 		VideoView vidView;
 		const string vidUrl = "http://64.15.158.43:1935/tvfrater/tvfrater/playlist.m3u8";
-		//const string vidUrl = "http://184.72.239.149/vod/smil:BigBuckBunny.smil/playlist.m3u8";
+		//const string vidUrl = "https://fratertv.s3.amazonaws.com/El%20Nacimiento%20de%20Juan%20El%20Bautista.mp4";
 
 		protected override void OnCreate(Bundle savedInstanceState)
 		{

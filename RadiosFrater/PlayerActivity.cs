@@ -109,27 +109,7 @@ namespace RadiosFrater
 			SupportActionBar.SetDisplayHomeAsUpEnabled(true);
 			if(mediaPlayerServiceConnection == null)
                 InitilizeMedia();
-			
-			//if (!isPlay)
-			//{
-			//	binder.GetMediaPlayerService().Play(id).ContinueWith(t => Console.Write(t.Exception), TaskContinuationOptions.OnlyOnFaulted);
-			//	btnPS.SetImageResource(Resource.Drawable.pausaRF);
-			//}
-			//else
-			//{
-			//	if (idSave != id)
-			//	{
-			//		binder.GetMediaPlayerService().Stop().ContinueWith(t => Console.Write(t.Exception), TaskContinuationOptions.OnlyOnFaulted);
-			//		binder.GetMediaPlayerService().Play(id).ContinueWith(t => Console.Write(t.Exception), TaskContinuationOptions.OnlyOnFaulted);
-			//	}
-			//	btnPS.SetImageResource(Resource.Drawable.pausaRF);
-			//}
 		}
-
-		//protected override void OnStart()
-		//{
-		//	base.OnStart();
-		//}
 
 		public void initPlay()
 		{

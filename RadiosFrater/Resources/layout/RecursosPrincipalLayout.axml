@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.percent.PercentRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/RF_fondo"
+    android:minWidth="25px"
+    android:minHeight="25px">
+    <ImageView
+        android:id="@+id/versiculosbtn"
+        app:layout_widthPercent="30%"
+        app:layout_heightPercent="30%"
+        app:layout_marginLeftPercent="10%"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true" />
+    <ImageView
+        android:id="@+id/predicasbtn"
+        app:layout_widthPercent="30%"
+        app:layout_heightPercent="30%"
+        app:layout_marginRightPercent="10%"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true" />
+</android.support.percent.PercentRelativeLayout>

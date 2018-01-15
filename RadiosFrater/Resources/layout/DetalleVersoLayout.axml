@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.percent.PercentRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:local="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/rf_fondo">
+    <android.support.v7.widget.Toolbar
+        android:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        local:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        android:id="@+id/toolbar"
+        android:background="#212121"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:layout_alignParentTop="true" />
+    <TextView
+        android:id="@+id/titsem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        local:layout_marginTopPercent="2%"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:gravity="center"
+        android:textAppearance="@android:style/TextAppearance.Material.Headline"
+        android:layout_below="@id/toolbar" />
+    <ImageView
+        android:id="@+id/imgverso"
+        android:layout_width="match_parent"
+        local:layout_marginTopPercent="5%"
+        local:layout_heightPercent="45%"
+        android:layout_below="@id/titsem" />
+<!--<TextView
+        android:id="@+id/textocita"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#FFFFFF"
+        local:layout_marginTopPercent="5%"
+        android:gravity="center"
+        android:layout_below="@id/imgverso"
+        android:textAppearance="@android:style/TextAppearance.Material.Subhead" />
+    <TextView
+        android:id="@+id/citav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        local:layout_marginTopPercent="5%"
+        android:textStyle="normal"
+        android:textColor="#FFFFFF"
+        android:gravity="center"
+        android:textAppearance="@android:style/TextAppearance.Material.Body2"
+        android:layout_below="@id/textocita" />-->
+    <ImageButton
+        android:id="@+id/btnFRV"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="#0000"
+        local:layout_marginTopPercent="5%"
+        android:scaleType="fitCenter"
+        android:layout_below="@id/imgverso" />
+    <ImageButton
+        android:id="@+id/compartirverso"
+        android:layout_width="130dp"
+        android:layout_height="40dp"
+        android:gravity="center"
+        android:layout_below="@id/btnFRV"
+        local:layout_marginTopPercent="5%"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/compartir" />
+</android.support.percent.PercentRelativeLayout>

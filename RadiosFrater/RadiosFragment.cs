@@ -14,11 +14,11 @@ using Android.Widget;
 
 namespace RadiosFrater
 {
+    [Activity(Label = "Fráter TV", ConfigurationChanges = Android.Content.PM.ConfigChanges.Orientation | Android.Content.PM.ConfigChanges.ScreenSize, Theme = "@android:style/Theme.NoTitleBar.Fullscreen")]
 	public class RadiosFragment : Android.Support.V4.App.Fragment
 	{
 		GridView rdiogrid;
 		public int nRadio;
-		bool isPlay;
 
 
 		public override void OnCreate (Bundle savedInstanceState)
@@ -38,6 +38,7 @@ namespace RadiosFrater
 				Intent player = new Intent(view.Context, typeof(PlayerActivity));
 				Intent Vplayer = new Intent(view.Context, typeof(VideoActivity));
 				player.PutExtra("id", nRadio);
+
 				if (nRadio == 7)
 					StartActivity(Vplayer);
 				else
@@ -46,6 +47,8 @@ namespace RadiosFrater
 
 			return view;
 		}
+
+
 	}
 
 	internal class ImageAdapter : BaseAdapter
@@ -98,7 +101,6 @@ namespace RadiosFrater
 		Resource.Drawable.KIds_2, Resource.Drawable.Adoracion_2,
 			Resource.Drawable.Espanol_2, Resource.Drawable.Ingles_2,
 			Resource.Drawable.Clasica_2, Resource.Drawable.Instrumental_2,
-			Resource.Drawable.Predicas, Resource.Drawable.FraterTV_2
-			};	}
+            Resource.Drawable.Predicas,	Resource.Drawable.FraterTV_2};	}
 }
 

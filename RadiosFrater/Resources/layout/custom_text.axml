@@ -10,5 +10,5 @@
         android:text="Sample"
         android:textStyle="normal"
         android:textColor="#ffffff"
-        android:paddingLeft="8dp" />
+        android:paddingLeft="6dp" />
 </RelativeLayout>

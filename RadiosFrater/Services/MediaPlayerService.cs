@@ -14,24 +14,24 @@ using System.Collections.Generic;
 
 namespace RadiosFrater.Services
 {
-	[Service]
-	[IntentFilter(new[] { ActionPlay, ActionPause, ActionStop, ActionTogglePlayback, ActionNext, ActionPrevious })]
-	public class MediaPlayerService : Service, AudioManager.IOnAudioFocusChangeListener,
-	MediaPlayer.IOnBufferingUpdateListener,
-	MediaPlayer.IOnCompletionListener, 
-	MediaPlayer.IOnErrorListener,
-	MediaPlayer.IOnPreparedListener,
-	MediaPlayer.IOnSeekCompleteListener
-	{
-		//Actions
-		public const string ActionPlay = "com.xamarin.action.PLAY";
-		public const string ActionPause = "com.xamarin.action.PAUSE";
-		public const string ActionStop = "com.xamarin.action.STOP";
-		public const string ActionTogglePlayback = "com.xamarin.action.TOGGLEPLAYBACK";
-		public const string ActionNext = "com.xamarin.action.NEXT";
-		public const string ActionPrevious = "com.xamarin.action.PREVIOUS";
+    [Service]
+    [IntentFilter(new[] { ActionPlay, ActionPause, ActionStop, ActionTogglePlayback, ActionNext, ActionPrevious })]
+    public class MediaPlayerService : Service, AudioManager.IOnAudioFocusChangeListener,
+    MediaPlayer.IOnBufferingUpdateListener,
+    MediaPlayer.IOnCompletionListener,
+    MediaPlayer.IOnErrorListener,
+    MediaPlayer.IOnPreparedListener,
+    MediaPlayer.IOnSeekCompleteListener
+    {
+        //Actions
+        public const string ActionPlay = "com.xamarin.action.PLAY";
+        public const string ActionPause = "com.xamarin.action.PAUSE";
+        public const string ActionStop = "com.xamarin.action.STOP";
+        public const string ActionTogglePlayback = "com.xamarin.action.TOGGLEPLAYBACK";
+        public const string ActionNext = "com.xamarin.action.NEXT";
+        public const string ActionPrevious = "com.xamarin.action.PREVIOUS";
 
-		public readonly string[] audioUrl = {
+        public readonly string[] audioUrl = {
 			//Kids							//Adoracion
 			@"http://174.142.111.104:9302", @"http://174.142.111.104:9984", 
 			//Español						//Ingles
@@ -41,7 +41,10 @@ namespace RadiosFrater.Services
 		    //Predicas						
 			@"http://174.142.111.104:9986"};
 
-		public int idM;
+        int idM;
+        string urlP;
+
+        public static MediaPlayerServiceBinder ServiceActive {get; set;}
 
 		public MediaPlayer mediaPlayer;
 		private AudioManager audioManager;
@@ -132,6 +135,12 @@ namespace RadiosFrater.Services
 				Buffering(this, e);
 		}
 
+        public override void OnLowMemory()
+        {
+            base.OnLowMemory();
+
+        }
+
 		/// <summary>
 		/// On create simply detect some of our managers
 		/// </summary>
@@ -214,9 +223,10 @@ namespace RadiosFrater.Services
 
 		public bool OnError(MediaPlayer mp, MediaError what, int extra)
 		{
-
+			if (extra == -1010 || extra == -1004)
+				return false;
 			UpdatePlaybackState(PlaybackStateCompat.StateError);
-			Stop();
+            Stop();
 			return true;
 		}
 
@@ -375,47 +385,96 @@ namespace RadiosFrater.Services
 			});
 		}
 
-		public async Task PlayNext()
-		{
-			if (mediaPlayer != null)
-			{
-				mediaPlayer.Reset();
-				mediaPlayer.Release();
-				mediaPlayer = null;
-			}
+        public async Task Play(string url)
+        {
+            urlP = url;
+            if (mediaPlayer != null && MediaPlayerState == PlaybackStateCompat.StatePaused)
+            {
+                //We are simply paused so just start again
+                mediaPlayer.Start();
+                UpdatePlaybackState(PlaybackStateCompat.StatePlaying);
+                StartNotification();
 
-			UpdatePlaybackState(PlaybackStateCompat.StateSkippingToNext);
+                //Update the metadata now that we are playing
+                UpdateMediaMetadataCompat();
+                return;
+            }
 
-			await Play(idM);
-		}
+            if (mediaPlayer == null)
+                InitializePlayer();
 
-		//public async Task PlayPrevious()
+            if (mediaSessionCompat == null)
+                InitMediaSession();
+
+            if (mediaPlayer.IsPlaying)
+            {
+                UpdatePlaybackState(PlaybackStateCompat.StatePlaying);
+                return;
+            }
+
+            try
+            {
+                MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
+
+                await mediaPlayer.SetDataSourceAsync(ApplicationContext, Android.Net.Uri.Parse(urlP));
+
+                await metaRetriever.SetDataSourceAsync(urlP, new Dictionary<string, string>());
+
+                var focusResult = audioManager.RequestAudioFocus(this, Stream.Music, AudioFocus.Gain);
+                if (focusResult != AudioFocusRequest.Granted)
+                {
+                    //could not get audio focus
+                    Console.WriteLine("Could not get audio focus");
+                }
+
+                UpdatePlaybackState(PlaybackStateCompat.StateBuffering);
+                mediaPlayer.PrepareAsync();
+
+                AquireWifiLock();
+                UpdateMediaMetadataCompat(metaRetriever);
+                StartNotification();
+
+                //byte[] imageByteArray = metaRetriever.GetEmbeddedPicture();
+                //if (imageByteArray == null)
+                //  Cover = await BitmapFactory.DecodeResourceAsync(Resources, Resource.Drawable.album_art);
+                //else
+                //  Cover = await BitmapFactory.DecodeByteArrayAsync(imageByteArray, 0, imageByteArray.Length);
+            }
+            catch (Exception ex)
+            {
+                UpdatePlaybackState(PlaybackStateCompat.StateStopped);
+
+                mediaPlayer.Reset();
+                mediaPlayer.Release();
+                mediaPlayer = null;
+
+                //unable to start playback log error
+                Console.WriteLine(ex);
+            }
+        }
+
+		//public async Task PlayNext()
 		//{
-		//	// Start current track from beginning if it's the first track or the track has played more than 3sec and you hit "playPrevious".
-		//	if (Position > 3000)
+		//	if (mediaPlayer != null)
 		//	{
-		//		await Seek(0);
+		//		mediaPlayer.Reset();
+		//		mediaPlayer.Release();
+		//		mediaPlayer = null;
 		//	}
-		//	else
-		//	{
-		//		if (mediaPlayer != null)
-		//		{
-		//			mediaPlayer.Reset();
-		//			mediaPlayer.Release();
-		//			mediaPlayer = null;
-		//		}
 
-		//		UpdatePlaybackState(PlaybackStateCompat.StateSkippingToPrevious);
+		//	UpdatePlaybackState(PlaybackStateCompat.StateSkippingToNext);
 
-		//		await Play();
-		//	}
+		//	await Play(idM);
 		//}
 
 		public async Task PlayPause()
 		{
 			if (mediaPlayer == null || (mediaPlayer != null && MediaPlayerState == PlaybackStateCompat.StatePaused))
 			{
-				await Play(idM);
+                if(idM != null)
+				    await Play(idM);
+                if (urlP != null)
+                    await Play(urlP);
 			}
 			else
 			{
@@ -488,8 +547,6 @@ namespace RadiosFrater.Services
 						RemoteControlFlags flags = RemoteControlFlags.Play
 							| RemoteControlFlags.Pause
 							| RemoteControlFlags.PlayPause
-							| RemoteControlFlags.Previous
-							| RemoteControlFlags.Next
 							| RemoteControlFlags.Stop;
 
 						remoteControlClient.SetTransportControlFlags(flags);
@@ -517,41 +574,53 @@ namespace RadiosFrater.Services
 		{
 			if (mediaSessionCompat == null)
 				return;
+            Intent intent = new Intent(this, typeof(PlayerActivity));
+            intent.PutExtra("id", idM);;
 
-			var pendingIntent = PendingIntent.GetActivity(ApplicationContext, 0, new Intent(ApplicationContext, typeof(PlayerActivity)), PendingIntentFlags.UpdateCurrent);
-			MediaMetadataCompat currentTrack = mediaControllerCompat.Metadata;
+            Intent intent2 = new Intent(this, typeof(DetalleRecursosActivity));
+            //var pendingIntent = PendingIntent.GetActivity(ApplicationContext, 0, new Intent(ApplicationContext, typeof(PlayerActivity)), PendingIntentFlags.UpdateCurrent);
+            //MediaMetadataCompat currentTrack = mediaControllerCompat.Metadata;
 
-			Android.Support.V7.App.NotificationCompat.MediaStyle style = new Android.Support.V7.App.NotificationCompat.MediaStyle();
-			style.SetMediaSession(mediaSessionCompat.SessionToken);
+            //Android.Support.V7.App.NotificationCompat.MediaStyle style = new Android.Support.V7.App.NotificationCompat.MediaStyle();
+            //style.SetMediaSession(mediaSessionCompat.SessionToken);
 
-			Intent intent = new Intent(ApplicationContext, typeof(MediaPlayerService));
-			intent.SetAction(ActionStop);
-			PendingIntent pendingCancelIntent = PendingIntent.GetService(ApplicationContext, 1, intent, PendingIntentFlags.CancelCurrent);
+            //Intent intent = new Intent(ApplicationContext, typeof(MediaPlayerService));
+            //intent.SetAction(ActionStop);
+            //PendingIntent pendingCancelIntent = PendingIntent.GetService(ApplicationContext, 1, intent, PendingIntentFlags.CancelCurrent);
 
-			style.SetShowCancelButton(true);
-			style.SetCancelButtonIntent(pendingCancelIntent);
+            //style.SetShowCancelButton(true);
+            //style.SetCancelButtonIntent(pendingCancelIntent);
+            if (urlP != null){
+                intent = intent2;
+            }
+			
+			const int pendIntId = 0;
 
-			NotificationCompat.Builder builder = new NotificationCompat.Builder(ApplicationContext)
-				.SetStyle(style)
-				.SetTicker("Radios Fráter")
-				.SetTicker("Reproduciendo")
-				.SetContentTitle("Radios Fráter")
-				//.SetContentText("Inglés")
-				//.SetContentInfo("Holis")
-				//.SetSmallIcon(Resource.Drawable.album_art)
-				//.SetLargeIcon(Cover as Bitmap)
+			PendingIntent pendingIntent = PendingIntent.GetActivity(this, pendIntId, intent, PendingIntentFlags.OneShot);
+
+			NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
+				//.SetStyle(style)
 				.SetContentIntent(pendingIntent)
-				.SetShowWhen(false)
-				.SetOngoing(MediaPlayerState == PlaybackStateCompat.StatePlaying)
-				.SetVisibility(NotificationCompat.VisibilityPublic);
+				.SetContentTitle("Radios Fráter")
+				.SetContentText("Reproduciendo")
+				.SetSmallIcon(Resource.Drawable.IconoMicrofono);
 
-			builder.AddAction(GenerateActionCompat(Android.Resource.Drawable.IcMediaPrevious, "Previous", ActionPrevious));
-			AddPlayPauseActionCompat(builder);
-			builder.AddAction(GenerateActionCompat(Android.Resource.Drawable.IcMediaNext, "Next", ActionNext));
-			style.SetShowActionsInCompactView(0, 1, 2);
+			Notification not = builder.Build();
 
-			NotificationManagerCompat.From(ApplicationContext).Notify(NotificationId, builder.Build());
-			StartForeground(NotificationId, builder.Build());
+			NotificationManager notManager = GetSystemService(Context.NotificationService) as NotificationManager;
+
+			const int idnot = 0;
+			notManager.Notify(idnot, not);
+
+			//builder.AddAction(GenerateActionCompat(Android.Resource.Drawable.IcMediaPrevious, "Previous", ActionPrevious));
+			//AddPlayPauseActionCompat(builder);
+			//builder.AddAction(GenerateActionCompat(Android.Resource.Drawable.IcMediaNext, "Next", ActionNext));
+			//style.SetShowActionsInCompactView(0, 1, 2);
+
+			//NotificationManagerCompat.From(ApplicationContext).Notify(NotificationId, builder.Build());
+			//StartForeground(NotificationId, builder.Build());
+
+
 		}
 
 		private NotificationCompat.Action GenerateActionCompat(int icon, String title, String intentAction)
@@ -570,8 +639,8 @@ namespace RadiosFrater.Services
 
 		private void AddPlayPauseActionCompat(NotificationCompat.Builder builder)
 		{
-			if (MediaPlayerState == PlaybackStateCompat.StatePlaying)
-				builder.AddAction(GenerateActionCompat(Android.Resource.Drawable.IcMediaPause, "Pause", ActionPause));
+            if (MediaPlayerState == PlaybackStateCompat.StatePlaying)
+                builder.AddAction(GenerateActionCompat(Android.Resource.Drawable.IcMediaPause, "Pause", ActionPause));
 			else
 				builder.AddAction(GenerateActionCompat(Android.Resource.Drawable.IcMediaPlay, "Play", ActionPlay));
 		}
@@ -614,8 +683,7 @@ namespace RadiosFrater.Services
 		[Obsolete("deprecated")]
 		public override StartCommandResult OnStartCommand(Intent intent, StartCommandFlags flags, int startId)
 		{
-			HandleIntent(intent);
-			return base.OnStartCommand(intent, flags, startId);
+			return StartCommandResult.Sticky;
 		}
 
 		private void HandleIntent(Intent intent)
@@ -697,8 +765,13 @@ namespace RadiosFrater.Services
 
 		public override bool OnUnbind(Intent intent)
 		{
-			StopNotification();
+			//StopNotification();
 			return base.OnUnbind(intent);
+		}
+
+		public override void OnRebind(Intent intent)
+		{
+			base.OnRebind(intent);
 		}
 
 		/// <summary>
@@ -810,9 +883,15 @@ namespace RadiosFrater.Services
 
 			public override void OnStop()
 			{
+				if (mediaPlayerService == null) 
+				{
 				mediaPlayerService.GetMediaPlayerService().Stop();
 				base.OnStop();
+				}
+				return;
 			}
+
+
 		}
 	}
 
@@ -829,5 +908,6 @@ namespace RadiosFrater.Services
 		{
 			return service;
 		}
+
 	}
 }
